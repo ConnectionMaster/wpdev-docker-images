@@ -1,6 +1,6 @@
 ARG PACKAGE_REGISTRY
 ARG PR_TAG
-FROM $PACKAGE_REGISTRY/php:5.5-fpm$PR_TAG
+FROM $PACKAGE_REGISTRY/php:8.1-fpm$PR_TAG
 
 ##########################################################################
 #
@@ -17,12 +17,12 @@ RUN set -ex; \
 	\
 	apt-get install -y --no-install-recommends \
 		less \
-		mysql-client \
+		virtual-mysql-client \
 	;
 
 RUN set -ex; \
 	\
-	curl -L -o /usr/local/bin/wp https://github.com/wp-cli/wp-cli/releases/download/v2.4.0/wp-cli-2.4.0.phar; \
+	curl -L -o /usr/local/bin/wp https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar; \
 	\
 	chmod +x /usr/local/bin/wp; \
 	\

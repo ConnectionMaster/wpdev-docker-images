@@ -17,18 +17,19 @@ RUN set -ex; \
 	\
 	apt-get update; \
 	\
-	apt-get install -y --no-install-recommends libjpeg-dev libpng-dev libzip-dev libmemcached-dev unzip libmagickwand-dev ghostscript libonig-dev locales sudo rsync libxslt-dev git; \
+	apt-get install -y --no-install-recommends libjpeg-dev libpng-dev libwebp-dev libzip-dev libmemcached-dev unzip libmagickwand-dev ghostscript libonig-dev locales sudo rsync libxslt-dev git; \
 	sed -i 's/^# *\(\(ru_RU\|fr_FR\|de_DE\|es_ES\|ja_JP\).UTF-8\)/\1/' /etc/locale.gen; \
 	locale-gen; \
 	\
-	docker-php-ext-configure gd --enable-gd --with-jpeg=/usr; \
+	docker-php-ext-configure gd --enable-gd --with-jpeg=/usr --with-webp=/usr; \
 	\
 	docker-php-ext-install gd opcache mysqli zip exif intl mbstring xml xsl; \
 	\
-	curl --location --output /usr/local/bin/pickle https://github.com/FriendsOfPHP/pickle/releases/download/v0.6.0/pickle.phar; \
+	curl --location --output /usr/local/bin/pickle https://github.com/FriendsOfPHP/pickle/releases/download/v0.7.0/pickle.phar; \
 	chmod +x /usr/local/bin/pickle; \
 	\
 	pickle install memcached-3.1.5; \
+	pickle install xdebug-3.0.2; \
 	\
 	curl --silent --fail --location --retry 3 --output /tmp/installer.php --url https://getcomposer.org/installer; \
 	curl --silent --fail --location --retry 3 --output /tmp/installer.sig --url https://composer.github.io/installer.sig; \
@@ -48,6 +49,13 @@ RUN set -ex; \
 COPY entrypoint.sh /entrypoint.sh
 COPY common.sh /common.sh
 COPY php-fpm.conf /usr/local/etc/php-fpm.d/zz-wordpress.conf
+
+ARG imagemagic_config=/etc/ImageMagick-6/policy.xml
+RUN if [ -f $imagemagic_config ] ; then \
+		sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' $imagemagic_config; \
+	else \
+		echo did not see file $imagemagic_config; \
+	fi
 
 RUN chmod +x /entrypoint.sh && \
     chmod +x /common.sh && \
